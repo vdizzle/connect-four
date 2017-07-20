@@ -23,7 +23,7 @@ module ConnectFour
       @current_player = switch_turns
     end
 
-    def won?
+    def game_completed?
       !winner.nil?
     end
 

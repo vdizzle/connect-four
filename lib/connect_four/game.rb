@@ -2,21 +2,20 @@ module ConnectFour
   class Game
     def initialize(players, board_size = [6, 7])
       @board = ConnectFour::Board.new(*board_size)
-      @player1 = player1
-      @player2 = player2
-      @state = ConnectFour::GameState.new(board, player1, player2)
+      @players = players
+      @manager = ConnectFour::Manager.new(board, players)
     end
 
     def start
       puts 'Starting the ConnectFour game'
-      puts "In turn, play by entering the row (1-#{board.row_size}), column (1-#{board.columns}) values  position for the current player (e.g. 2 3):"
+      puts "In turn, play by entering the row (1-#{board.rows}), column (1-#{board.columns}) values  position for the current player (e.g. 2 3):"
       puts 'Enter `exit` anytime to quit the game'
       puts "Enter move for player - #{current_player.name}"
 
       while (input = gets.chomp.downcase) != 'exit'
         begin
-          state.process(input)
-          break if state.won?
+          manager.process(input)
+          break if manager.game_completed?
         rescue ConnectFour::PositionNotOpen => e
           puts "A play has already been made at #{input}"
         rescue ConnectFour::InvalidMove => e
@@ -24,7 +23,7 @@ module ConnectFour
         rescue StandardError => e
           puts e.inspect
         ensure
-          unless state.completed?
+          unless manager.game_completed?
             puts "Enter move for player - #{current_player.name}"
           end
         end
@@ -33,10 +32,10 @@ module ConnectFour
 
     private
 
-    attr_reader :board, :players, :state
+    attr_reader :board, :players, :manager
 
     def current_player
-      state.current_player
+      manager.current_player
     end
   end
 end
