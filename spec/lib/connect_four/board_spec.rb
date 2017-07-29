@@ -40,19 +40,19 @@ describe 'ConnectFour::Board' do
 
         expect {
           board.play(2, 'Y')
-        }.to raise_error(ConnectFour::InvalidMove)
+        }.to raise_error(ConnectFour::PositionNotOpen)
       end
     end
   end
 
-  describe '#has_winner?' do
+  describe '#won?' do
     let(:board) { ConnectFour::Board.new(6, 7) }
 
     context 'with less than four connected symbols' do
       it 'should return false' do
         3.times { board.play(1, 'R') }
 
-        expect(board.has_winner?('R')).to eq(false)
+        expect(board.won?).to eq(false)
       end
     end
 
@@ -61,7 +61,7 @@ describe 'ConnectFour::Board' do
         3.times { board.play(1, 'R') }
         4.times { board.play(2, 'Y') }
 
-        expect(board.has_winner?('Y')).to eq(true)
+        expect(board.won?).to eq(true)
       end
     end
 
@@ -70,14 +70,11 @@ describe 'ConnectFour::Board' do
         (5..7).each { |i| board.play(i, 'Y') }
         (1..4).each { |i| board.play(i, 'R') }
 
-        expect(board.has_winner?('R')).to eq(true)
+        expect(board.won?).to eq(true)
       end
     end
 
-    context 'with four diagonally connected symbols' do
-      before do
-      end
-
+    context 'with four diagonally connected symbols with positive slope' do
       it 'should find the connected symbols' do
         board.play(3, 'Y')
         board.play(3, 'R')
@@ -92,8 +89,28 @@ describe 'ConnectFour::Board' do
         board.play(5, 'Y')
         board.play(5, 'R')
 
-        expect(board.has_winner?('R')).to eq(true)
+        expect(board.won?).to eq(true)
       end
     end
+
+    context 'with four diagonally connected symbols with negative slope' do
+      it 'should find the connected symbols' do
+        board.play(2, 'Y')
+        board.play(3, 'R')
+        board.play(4, 'Y')
+        board.play(5, 'R')
+        board.play(5, 'Y')
+        board.play(4, 'R')
+        board.play(3, 'Y')
+        board.play(3, 'R')
+        board.play(2, 'Y')
+        board.play(1, 'R')
+        board.play(2, 'Y')
+        board.play(2, 'R')
+
+        expect(board.won?).to eq(true)
+      end
+    end
+
   end
 end

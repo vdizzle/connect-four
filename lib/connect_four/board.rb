@@ -12,7 +12,7 @@ module ConnectFour
         result
       end
       @move_count = 0
-      @active_cell = {}
+      @last_played_position = {}
     end
 
     def play(column, piece)
@@ -21,10 +21,10 @@ module ConnectFour
 
       target_row = column_tracker[target_column] - 1
 
-      raise ConnectFour::InvalidMove if target_row < 0 || target_row >= rows
+      raise ConnectFour::PositionNotOpen if target_row < 0 || target_row >= rows
 
-      @active_cell = { row: target_row, column: target_column }
-      set_board_piece_at(active_cell, piece)
+      @last_played_position = { row: target_row, column: target_column }
+      set_board_piece_at(last_played_position, piece)
       column_tracker[target_column] -= 1
       @move_count += 1
     end
@@ -42,130 +42,94 @@ module ConnectFour
       end
     end
 
-    def has_winner?(piece)
+    def won?
       return false if move_count < 7
 
-      vertical_connected = vertical_four_connected?(piece, active_cell)
-      return true if vertical_connected
+      piece = get_board_piece_at(last_played_position)
 
-      horizontal_connected = horizontal_four_connected?(piece, active_cell)
-      return true if horizontal_connected
+      four_connected?(piece, last_played_position, nil) ||
+      four_connected?(piece, last_played_position, 0) ||
+      four_connected?(piece, last_played_position, 1) ||
+      four_connected?(piece, last_played_position, -1)
+    end
 
-      diagonal_connected = diagonal_positive_slope_four_connected?(piece, active_cell)
-      return true if diagonal_connected
+    def tied?
+      board_full? && !won?
+    end
 
-      diagonal_negative_slope_four_connected?(piece, active_cell)
+    def winning_piece
+      get_board_piece_at(last_played_position) if won?
     end
 
     private
 
-    def set_board_piece_at(cell_position, piece)
-      cells[cell_position[:row]][cell_position[:column]] = piece
+    def status
+      [:ongoing, :won, :tied]
     end
 
-    def get_board_piece_at(cell_position)
-      cells[cell_position[:row]][cell_position[:column]]
+    def board_full?
+      column_tracker.values.uniq == [0]
     end
 
-    def matching_piece?(piece, cell)
-      piece = get_board_piece_at(cell)
+    def set_board_piece_at(position, piece)
+      cells[position[:row]][position[:column]] = piece
     end
 
-    def vertical_four_connected?(piece, cell)
-      start_row = cell[:row] - 3
-      end_row = cell[:row] + 3
-
-      start_row = 0 if start_row < 0
-      end_row = rows - 1 if end_row >= rows
-
-      four_connected?(
-        piece,
-        { row: start_row, column: cell[:column] },
-        { row: end_row, column: cell[:column] },
-        { row: 1, column: 0 }
-      )
+    def get_board_piece_at(position)
+      cells[position[:row]][position[:column]]
     end
 
-    def horizontal_four_connected?(piece, cell)
-      start_column = cell[:column] - 3
-      end_column = cell[:column] + 3
-
-      start_column = 0 if start_column < 0
-      end_column = columns - 1 if end_column >= columns
-
-      four_connected?(
-        piece,
-        { row: cell[:row], column: start_column },
-        { row: cell[:row], column: end_column },
-        { row: 0, column: 1 }
-      )
+    def matching_piece?(piece, position)
+      piece == get_board_piece_at(position)
     end
 
-    def diagonal_positive_slope_four_connected?(piece, cell)
-      start_row = cell[:row] + 3
-      start_column = cell[:column] - 3
-
-      end_row = cell[:row] - 3
-      end_column = cell[:column] + 3
-
-      start_row = rows - 1 if start_row >= rows
-      end_row = 0 if end_row < 0
-      start_column = 0 if start_column < 0
-      end_column = columns - 1 if end_column >= columns
-
-      four_connected?(
-        piece,
-        { row: start_row, column: start_column },
-        { row: end_row, column: end_column },
-        { row: -1, column: 1 }
-      )
+    def position_within_board?(position)
+      position[:row] >= 0 && position[:row] < rows && position[:column] >= 0 && position[:column] < columns
     end
 
-  def diagonal_negative_slope_four_connected?(piece, cell)
-      start_row = cell[:row] + 3
-      start_column = cell[:column] - 3
+    def four_connected?(piece, ref_position, slope)
+      step = slope_to_step(slope)
+      inspect_positions = [ref_position]
 
-      end_row = cell[:row] + 3
-      end_column = cell[:column] + 3
+      (1..3).each do |i|
+        right_of_ref_position = {
+          row: ref_position[:row] + (i * step[:row]),
+          column: ref_position[:column] + (i * step[:column])
+        }
+        left_of_ref_position = {
+          row: ref_position[:row] - (i * step[:row]),
+          column: ref_position[:column] - (i * step[:column])
+        }
+        inspect_positions << right_of_ref_position if position_within_board?(right_of_ref_position)
+        inspect_positions.unshift(left_of_ref_position) if position_within_board?(left_of_ref_position)
+      end
 
-      start_row = 0 if start_row < 0
-      end_row = rows - 1 if end_row >= rows
-      start_column = 0 if start_column < 0
-      end_column = columns - 1 if end_column >= columns
-
-      four_connected?(
-        piece,
-        { row: start_row, column: start_column },
-        { row: end_row, column: end_column },
-        { row: 1, column: 1 }
-      )
-    end
-
-
-    def four_connected?(piece, start_cell, end_cell, step)
-      target_cell = start_cell
       connected_count = 0
-
-      loop do
-        if matching_piece?(piece, target_cell)
+      inspect_positions.each do |position|
+        if matching_piece?(piece, position)
           connected_count += 1
           return true if connected_count >= 4
         else
           connected_count = 0
-        end
-
-        target_cell[:row] += step[:row]
-        target_cell[:column] += step[:column]
-
-        if target_cell == end_cell
-          connected_count += 1 if matching_piece?(piece, target_cell)
-          break
         end
       end
 
       connected_count >= 4
     end
 
-    attr_reader :cells, :move_count, :active_cell, :column_tracker
+    def slope_to_step(slope)
+      case slope
+      when 0
+        { row: 0, column: 1 }
+      when 1
+        { row: -1, column: 1 }
+      when -1
+        { row: 1, column: 1 }
+      else
+        { row: 1, column: 0 }
+      end
+    end
+
+    attr_reader :cells, :move_count, :last_played_position, :column_tracker
   end
 end

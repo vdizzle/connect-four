@@ -1,9 +1,10 @@
 require './boot'
 
-game = ConnectFour::Game.new(
+manager = ConnectFour::Manager.new(
   [
-    ConnectFour::Player.new({ name: 'Hey', symbol: 'X' }),
-    ConnectFour::Player.new({ name: 'Ho', symbol: 'Y' })
-  ]
+    ConnectFour::Player.new({ name: 'Hey', piece: 'Y' }),
+    ConnectFour::Player.new({ name: 'Ho', piece: 'R' })
+  ],
+  ConnectFour::Board.new(*[6, 7])
 )
-game.start
+manager.play_game
