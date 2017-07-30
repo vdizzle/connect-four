@@ -6,7 +6,7 @@ module ConnectFour
       raise ConnectFour::InvalidBoardSize if [columns, rows].min < 4
       @rows = rows
       @columns = columns
-      @cells = rows.times.map { |i| Array.new(columns, 0) }
+      @cells = rows.times.map { |i| Array.new(columns, ' ') }
       @column_tracker = columns.times.inject({}) do |result, current|
         result[current] = rows
         result
@@ -29,17 +29,16 @@ module ConnectFour
       @move_count += 1
     end
 
-    def show
-      puts ''
+    def to_s(options = { formatted: false, color_map: {} })
+      board = ""
       cells.each do |row|
-        formatted_row = ''
-        formatted_row << '|'
-        row.each do |col|
-          formatted_row << col.to_s
-          formatted_row << '|'
+        board_row = '|'
+        row.each do |piece|
+            board_row << ::ConnectFour::Piece.new(piece).to_s(options) << '|'
         end
-        puts formatted_row
+        board << board_row << "\n"
       end
+      board
     end
 
     def won?
@@ -47,7 +46,7 @@ module ConnectFour
 
       piece = get_board_piece_at(last_played_position)
 
-      four_connected?(piece, last_played_position, nil) ||
+      four_connected?(piece, last_played_position, '∞') ||
       four_connected?(piece, last_played_position, 0) ||
       four_connected?(piece, last_played_position, 1) ||
       four_connected?(piece, last_played_position, -1)
@@ -62,10 +61,6 @@ module ConnectFour
     end
 
     private
-
-    def status
-      [:ongoing, :won, :tied]
-    end
 
     def board_full?
       column_tracker.values.uniq == [0]

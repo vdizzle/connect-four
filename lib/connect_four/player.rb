@@ -3,10 +3,15 @@ module ConnectFour
     attr_reader :name, :piece
 
     def initialize(options = {})
-      raise ConnectFour::InvalidPlayerAttribute if options[:piece].nil?
+      raise ConnectFour::MissingPlayerAttribute if options[:name].nil?
+      raise ConnectFour::MissingPlayerAttribute if options[:piece].nil?
 
-      @name = options[:name] || 'Player'
-      @piece = options.fetch(:piece).upcase
+      @name = options[:name]
+      @piece = options[:piece].to_sym
+    end
+
+    def to_s(options = { formatted: false, color_map: {} })
+      "#{self.name} playing with piece #{Piece.new(self.piece).to_s(options)}"
     end
 
     def human?
