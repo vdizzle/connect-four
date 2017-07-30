@@ -43,8 +43,7 @@ describe ConnectFour::Player do
       it 'should return player name with piece info as •' do
         player = ConnectFour::Player.new({ name: 'Fearsome Four', piece: 'r' })
         player_string = player.to_s(formatted:true, color_map: { 'r': :red })
-        expect(player_string).to match /Fearsome Four playing with piece/
-        expect(player_string).to match /•/
+        expect(player_string).to match /Fearsome Four.* playing with piece.*•/
       end
     end
   end

@@ -47,6 +47,7 @@ loop do
   puts display
 
   break unless game_manager.game_state == :ongoing
+  puts 'Enter `exit` anytime to quit the game'
   puts "Enter move (1-#{BOARD_COLUMN_SIZE}) for player - #{game_manager.current_player.to_s(format_options)}"
   input = gets.chomp.upcase
   break if input == 'EXIT'
@@ -55,9 +56,9 @@ loop do
     game_manager.process_play(input)
     error = ""
   rescue ConnectFour::PositionNotOpen => e
-    error = "No open position in column #{input}"
+	error = "No open position in column #{input}".colorize(:red)
   rescue ConnectFour::InvalidMove => e
-    error = "Please enter a value in the range (1-#{BOARD_COLUMN_SIZE})"
+	error = "Please enter a value in the range (1-#{BOARD_COLUMN_SIZE})".colorize(:red)
   rescue StandardError => e
     puts e.inspect
     puts e.backtrace

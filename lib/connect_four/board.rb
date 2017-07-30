@@ -3,10 +3,11 @@ module ConnectFour
     attr_reader :rows, :columns
 
     def initialize(rows, columns)
-      raise ConnectFour::InvalidBoardSize if [columns, rows].min < 4
+      assert_valid_board!(rows, columns)
+
       @rows = rows
       @columns = columns
-      @cells = rows.times.map { |i| Array.new(columns, ' ') }
+      @cells = rows.times.map { |i| Array.new(columns, '') }
       @column_tracker = columns.times.inject({}) do |result, current|
         result[current] = rows
         result
@@ -38,6 +39,13 @@ module ConnectFour
         end
         board << board_row << "\n"
       end
+
+      board_row = '|'
+      cells[-1].each_with_index do |piece, index|
+        board_row << (index + 1).to_s << '|'
+      end
+      board << board_row << "\n"
+
       board
     end
 
@@ -56,11 +64,13 @@ module ConnectFour
       board_full? && !won?
     end
 
-    def winning_piece
-      get_board_piece_at(last_played_position) if won?
-    end
-
     private
+
+    attr_reader :cells, :move_count, :last_played_position, :column_tracker
+
+    def assert_valid_board!(rows, columns)
+      raise ConnectFour::InvalidBoardSize if [columns, rows].min < 4
+	end
 
     def board_full?
       column_tracker.values.uniq == [0]
@@ -124,7 +134,5 @@ module ConnectFour
         { row: 1, column: 0 }
       end
     end
-
-    attr_reader :cells, :move_count, :last_played_position, :column_tracker
   end
 end

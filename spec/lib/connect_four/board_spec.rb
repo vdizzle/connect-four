@@ -75,42 +75,32 @@ describe ConnectFour::Board do
     end
 
     context 'with four diagonally connected symbols with positive slope' do
+      before do
+        preload_board_pieces(
+          board,
+          ['Y', 'R'],
+          [3, 3, 3, 2, 2, 4, 4, 4, 5, 5, 5, 5]
+        )
+      end
+
       it 'should find the connected symbols' do
-        board.play(3, 'Y')
-        board.play(3, 'R')
-        board.play(3, 'Y')
-        board.play(2, 'R')
-        board.play(2, 'Y')
-        board.play(4, 'R')
-        board.play(4, 'Y')
-        board.play(4, 'R')
-        board.play(5, 'Y')
-        board.play(5, 'R')
-        board.play(5, 'Y')
-        board.play(5, 'R')
 
         expect(board.won?).to eq(true)
       end
     end
 
     context 'with four diagonally connected symbols with negative slope' do
-      it 'should find the connected symbols' do
-        board.play(2, 'Y')
-        board.play(3, 'R')
-        board.play(4, 'Y')
-        board.play(5, 'R')
-        board.play(5, 'Y')
-        board.play(4, 'R')
-        board.play(3, 'Y')
-        board.play(3, 'R')
-        board.play(2, 'Y')
-        board.play(1, 'R')
-        board.play(2, 'Y')
-        board.play(2, 'R')
+      before do
+        preload_board_pieces(
+          board,
+          ['Y', 'R'],
+          [2, 3, 4, 5, 5, 4, 3, 3, 2, 1, 2, 2]
+        )
+      end
 
+      it 'should find the connected symbols' do
         expect(board.won?).to eq(true)
       end
     end
-
   end
 end
