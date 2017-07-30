@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'ConnectFour::Piece' do
+describe ConnectFour::Piece do
   describe '#to_s' do
     context 'without formatting options' do
       it 'should return a space character for blank value' do

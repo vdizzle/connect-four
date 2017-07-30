@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'ConnectFour::Board' do
+describe ConnectFour::Board do
   describe 'board creation' do
     context 'with a board smaller than 4 row/colum' do
       it 'should raise InvalidBoardSize exception if invalid row size' do

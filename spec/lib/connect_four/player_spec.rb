@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'ConnectFour::Player' do
+describe ConnectFour::Player do
   describe 'player creation' do
     context 'without initialization attributes' do
       it 'should raise MissingPlayerAttribute exception when name is missing' do

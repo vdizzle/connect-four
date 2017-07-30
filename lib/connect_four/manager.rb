@@ -3,6 +3,8 @@ module ConnectFour
     attr_reader :current_player
 
     def initialize(players, board)
+      assert_valid_players!(players)
+
       @players = players
       @board = board
       @current_player = players[rand(2)]
@@ -34,6 +36,21 @@ module ConnectFour
     private
 
     attr_reader :board, :players
+
+    def assert_valid_players!(players)
+      raise ConnectFour::InvalidPlayerCount if players.size != 2
+
+      player_types = []
+      player_pieces = []
+
+      unless players.map { |p| p.class }.uniq == [ConnectFour::Player]
+        raise ConnectFour::InvalidPlayerType
+      end
+
+      unless players.map { |p| p.piece }.uniq.size == 2
+        raise ConnectFour::DuplicatePlayer
+      end
+    end
 
     def switch_turns
       @current_player = current_player == players.first ? players.last : players.first
